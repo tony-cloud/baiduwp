@@ -1,3 +1,6 @@
+# Outdated
+Server-side change. Can't fix. Please use official client.
+
 # baiduwp
 
 PanDownload Web, built with CloudFlare Workers
