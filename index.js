@@ -548,7 +548,7 @@ const filebody = `<!DOCTYPE html>
 <link href="https://cdn.staticfile.org/font-awesome/5.8.1/css/all.min.css" rel="stylesheet">
 <title>文件列表</title>
 <script>
-  function dl(fs_id, timestamp, sign, randsk, share_id, uk) {
+  function dl(fs_id, timestamp, sign, randsk, share_id, uk, fname) {
     var form = $('<form method="post" action="/download" target="_blank"></form>');
     form.append('<input type="hidden" name="fs_id" value="'+fs_id+'">');
     form.append('<input type="hidden" name="time" value="'+timestamp+'">');
@@ -556,6 +556,7 @@ const filebody = `<!DOCTYPE html>
     form.append('<input type="hidden" name="randsk" value="'+randsk+'">');
     form.append('<input type="hidden" name="share_id" value="'+share_id+'">');
     form.append('<input type="hidden" name="uk" value="'+uk+'">');
+    form.append('<input type="hidden" name="filename" value="'+fname+'">');
     $(document.body).append(form);
     form.submit();
   }
@@ -872,7 +873,7 @@ const generate = async request => {
       if(file.isdir == 0){
 filecontent += `<li class="list-group-item border-muted rounded text-muted py-2">
 <i class="far fa-file mr-2"></i>
-<a href="javascript:void(0)" onclick="dl('`+ file.fs_id + `',`+ timestamp +`,'`+ sign +`','` + randsk + `','`+shareid+`','`+ uk +`')">`+file.server_filename+`</a>
+<a href="javascript:void(0)" onclick="dl('`+ file.fs_id + `',`+ timestamp +`,'`+ sign +`','` + randsk + `','`+shareid+`','`+ uk +`','`+ file.server_filename +`')">`+file.server_filename+`</a>
 <span class="float-right">`+ formatBytes(file.size) +`</span>
 </li>`
       }
@@ -1222,6 +1223,7 @@ else{
 async function addUri(){
 let token = $('#token').val()
 let aria2url = $('#url').val()
+let filename = $('#filename').val()
 // Thanks to acgotaku/BaiduExporter
 const httpurl = $('#http')[0].href
 const httpsurl = $('#https')[0].href
@@ -1235,7 +1237,7 @@ postVer = JSON.stringify({
 		  id: 'baiduwp',
 		  params: ['token:'+token]
 		})
-post = JSON.stringify({jsonrpc:'2.0',id:'baiduwp',method:'aria2.addUri',params:["token:"+token,[httpurl,httpsurl],{header:headerOption}]})
+post = JSON.stringify({jsonrpc:'2.0',id:'baiduwp',method:'aria2.addUri',params:["token:"+token,[httpurl,httpsurl],{header:headerOption,'auto-file-renaming':"true",'out':filename}]})
 }
 else{
 postVer = JSON.stringify({	
@@ -1244,7 +1246,7 @@ postVer = JSON.stringify({
 		  id: 'baiduwp',
 		  params: []
 		})
-post = JSON.stringify({jsonrpc:'2.0',id:'baiduwp',method:'aria2.addUri',params:[[httpurl,httpsurl],{header:headerOption}]})
+post = JSON.stringify({jsonrpc:'2.0',id:'baiduwp',method:'aria2.addUri',params:[[httpurl,httpsurl],{header:headerOption,'auto-file-renaming':"true",'out':filename}]})
 }
 
 
@@ -1342,7 +1344,14 @@ const dfooter = `
 	  	  <p><label class="control-label">Token</label>
         <input name="token" id="token" class="form-control" placeholder="If none keep empty"></p>
 	  </div>
+      <div class="form-group">
+	  	  <p><label class="control-label">Filename</label>
+        <input name="filename" id="filename" class="form-control" placeholder="If none keep empty"></p>
 	  </div>
+      <script>
+        var t=document.getElementById("filename");
+        t.value=document.getElementById("filenameorig").value
+      </script>
       <div class="modal-footer">
 	  <button type="button" class="btn btn-primary" onclick="addUri()" data-dismiss="modal">Send</button>
 	  <button type="button" class="btn btn-success" onclick="checkVer()">Check Version</button>
@@ -1546,6 +1555,7 @@ const download = async request => {
   const randsk = form2.get('randsk')
   const share_id = form2.get('share_id')
   const uk = form2.get('uk')
+  const filename = form2.get('filename')
   async function getDlink(fs_id,timestamp,sign,randsk,share_id,uk){
     var formData2 = new FormData()
     formData2.append('encrypt',0)
@@ -1590,7 +1600,8 @@ const download = async request => {
     <a href=javascript:void(0) data-toggle="modal" data-target="#exampleModal">推送到Aria2</a>
     <br><br>
     <a href="./help">下载链接使用方法（必读）</a></p>
-    </div>`
+    </div>
+    <input id="filenameorig" name="filenameorig" type="hidden" value="`+filename+`"/>`
   }
   else{
     dresult = `<div class="alert alert-danger" role="alert">
