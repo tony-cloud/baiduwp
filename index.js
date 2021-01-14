@@ -1224,6 +1224,9 @@ async function addUri(){
 let token = $('#token').val()
 let aria2url = $('#url').val()
 let filename = $('#filename').val()
+if(filename === ""){
+  filename = $('#filenameorig').val()
+}
 // Thanks to acgotaku/BaiduExporter
 const httpurl = $('#http')[0].href
 const httpsurl = $('#https')[0].href
@@ -1346,7 +1349,7 @@ const dfooter = `
 	  </div>
       <div class="form-group">
 	  	  <p><label class="control-label">Filename</label>
-        <input name="filename" id="filename" class="form-control" placeholder="If none keep empty"></p>
+        <input name="filename" id="filename" class="form-control" placeholder="Filename must be specified"></p>
 	  </div>
       <script>
         var t=document.getElementById("filename");
